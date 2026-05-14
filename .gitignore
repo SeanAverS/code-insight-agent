@@ -1,0 +1,25 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Environment / Secrets
+.env
+.env.local
+
+# Debug logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Mac specific
+.DS_Store
+
+# Data Bridge JSON
+data.json
+
+# Local config backups
+claude_desktop_config.json.bak
+
+# Misc
+dev_notes.md
