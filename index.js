@@ -6,7 +6,17 @@ import { z } from "zod";
 import fs from "fs/promises";
 import path from "path";
 
-// project agent evalutes  
+// export agent findings to dashboard 
+async function exportToDashboard(data) {
+  const dashboardPath = '/Users/seanasuguitan/Projects/code-insight-agent/dashboard/public/data.json';
+  try {
+    await fs.writeFile(dashboardPath, JSON.stringify(data, null, 2));
+  } catch (err) {
+    console.error("Bridge Error:", err);
+  }
+}
+
+// project agent evaluates  
 const PROJECT_ROOT = process.env.TARGET_PROJECT_PATH || process.cwd();
 
 const server = new McpServer({
@@ -23,6 +33,20 @@ server.tool(
     try {
       const targetPath = path.join(PROJECT_ROOT, relative_path);
       const entries = await fs.readdir(targetPath, { withFileTypes: true });
+
+      // format files for dashboard
+      const fileList = entries.map(e => ({
+        name: e.name,
+        type: e.isDirectory() ? 'directory' : 'file'
+      }));
+
+      // write project directory to data.json
+      await exportToDashboard({
+        projectPath: PROJECT_ROOT,
+        files: fileList,
+        lastUpdated: new Date().toLocaleTimeString() 
+      });
+
       const list = entries.map(e => e.isDirectory() ? `[DIR] ${e.name}` : e.name).join("\n");
       return { content: [{ type: "text", text: list || "(empty)" }] };
     } catch (error) {
@@ -38,8 +62,27 @@ server.tool(
   { relative_path: z.string() },
   async ({ relative_path }) => {
     try {
-      const content = await fs.readFile(path.join(PROJECT_ROOT, relative_path), "utf-8");
-      return { content: [{ type: "text", text: content }] };
+      const targetFilePath = path.join(PROJECT_ROOT, relative_path);
+      const content = await fs.readFile(targetFilePath, "utf-8");
+
+      // find folder containing file so sidebar focuses on it
+      const currentFolder = path.dirname(targetFilePath);
+      const entries = await fs.readdir(currentFolder, { withFileTypes: true });
+      const fileList = entries.map(e => ({
+        name: e.name,
+        type: e.isDirectory() ? 'directory' : 'file'
+      }));
+
+      // write file content to data.json
+      await exportToDashboard({
+        projectPath: PROJECT_ROOT,
+        files: fileList,                   
+        activeFile: relative_path,         
+        currentCode: content,       
+        lastUpdated: new Date().toLocaleTimeString()
+      });
+
+      return { content: [{ type: "text", text: `Successfully loaded context for ${relative_path}` }] };
     } catch (error) {
       return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
     }
