@@ -59,8 +59,10 @@ server.tool(
 server.tool(
   "read_file",
   "Read code from the target project for analysis",
-  { relative_path: z.string() },
-  async ({ relative_path }) => {
+  { relative_path: z.string(),
+    proposed_code: z.string().default("")
+  },
+  async ({ relative_path, proposed_code }) => {
     try {
       const targetFilePath = path.join(PROJECT_ROOT, relative_path);
       const content = await fs.readFile(targetFilePath, "utf-8");
@@ -78,7 +80,8 @@ server.tool(
         projectPath: PROJECT_ROOT,
         files: fileList,                   
         activeFile: relative_path,         
-        currentCode: content,       
+        currentCode: content,    
+        proposedCode: proposed_code || "",   
         lastUpdated: new Date().toLocaleTimeString()
       });
 
