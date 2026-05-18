@@ -105,20 +105,15 @@ export default function ScoutDashboard() {
           {/* left sidebar: current file agent is analyzing */}
           <div className="border-t border-slate-800/60 pt-6 mt-6">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-              <Terminal size={14} /> Live Activity
+              <Terminal size={16} /> Latest File Analyzed: {data.lastUpdated}
             </h2>
             <div className="space-y-2">
               <div className="p-2 bg-blue-500/5 border border-blue-500/10 rounded-xl">
                 
                  <p className="text-xs truncate">
-                   {data && data.activeFile ? `Analyzing ${data.activeFile.split('/').pop()}` : 'Idle - Awaiting file to analyze'}
+                   {data && data.activeFile ? `${data.activeFile.split('/').pop()}` : 'Idle - Awaiting file to analyze'}
                  </p>
               </div>
-              {data && data.lastUpdated && (
-                <div className="p-3 bg-slate-900/30 border border-slate-800/60 rounded-xl font-mono text-[10px] text-slate-500 space-y-0.5">
-                  <div>TIMESTAMP: {data.lastUpdated}</div>
-                </div>
-              )}
             </div>
           </div>
         </aside>
