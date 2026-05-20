@@ -105,7 +105,7 @@ export default function ScoutDashboard() {
           {/* left sidebar: current file agent is analyzing */}
           <div className="border-t border-slate-800/60 pt-6 mt-6">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2">
-              <Terminal size={16} /> Latest File Analyzed: {data.lastUpdated}
+              <Terminal size={16} /> Latest File Analyzed: {data?.lastUpdated || 'Loading...'}
             </h2>
             <div className="space-y-2">
               <div className="p-2 bg-blue-500/5 border border-blue-500/10 rounded-xl">
