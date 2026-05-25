@@ -44,7 +44,7 @@ server.tool(
       await exportToDashboard({
         projectPath: PROJECT_ROOT,
         files: fileList,
-        lastUpdated: new Date().toLocaleTimeString() 
+        lastUpdated: new Date().toLocaleTimeString() // time only
       });
 
       const list = entries.map(e => e.isDirectory() ? `[DIR] ${e.name}` : e.name).join("\n");
@@ -82,7 +82,7 @@ server.tool(
         activeFile: relative_path,         
         currentCode: content,    
         proposedCode: proposed_code || "",   
-        lastUpdated: new Date().toLocaleTimeString()
+        lastUpdated: new Date().toLocaleTimeString() // time only 
       });
 
       return { content: [{ type: "text", text: `Successfully loaded context for ${relative_path}` }] };
