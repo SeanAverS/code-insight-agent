@@ -213,7 +213,7 @@ export default function ScoutDashboard() {
                         continue;
                       }
 
-                      // Case 2: show added proposed lines
+                      // case 2: show added proposed lines
                       // reaches end of original lines but proposed still has lines 
                       if (origLine === undefined && propLine !== undefined) {
                         // render proposed line green 
