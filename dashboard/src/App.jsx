@@ -151,36 +151,134 @@ export default function ScoutDashboard() {
           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-sm font-semibold flex items-center gap-2">
-                <MessageSquareCode size={16} className="text-purple-400" /> Code Suggestions
+                <MessageSquareCode size={16} className="text-purple-400" /> Proposed Changes
               </h2>
               {data && data.activeFile && (
                 <span className="text-[10px] font-mono text-slate-500">{data.activeFile}</span>
               )}
             </div>
 
+
             {data && data.currentCode ? (
-              <div className="grid grid-cols-2 gap-4 font-mono text-[11px] h-72">
-                {/* local code */}
-                <div className="flex flex-col h-full bg-black/30 rounded-xl border border-slate-800/60 overflow-hidden">
-                  <div className="bg-slate-950/50 px-3 py-1.5 border-b border-slate-800/60 text-[10px] text-slate-500 font-bold tracking-wider">LOCAL SOURCE</div>
-                  <div className="flex-1 p-3 overflow-auto text-slate-400 leading-relaxed whitespace-pre select-text">
-                    {data.currentCode}
-                  </div>
-                </div>
-                {/* ai recommended code */}
-                <div className="flex flex-col h-full bg-purple-950/5 rounded-xl border border-purple-900/20 overflow-hidden">
-                  <div className="bg-purple-950/20 px-3 py-1.5 border-b border-purple-900/20 text-[10px] text-purple-400 font-bold tracking-wider">AI RECOMMENDATION</div>
-                  <div className="flex-1 p-3 overflow-auto text-purple-300 leading-relaxed whitespace-pre select-text">
-                    {data.proposedCode || '// Staging complete. Awaiting optimization criteria instructions...'}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="font-mono text-sm text-slate-400 leading-relaxed bg-black/20 p-4 rounded-lg">
-                 Ready for project analysis - Use a tool show code recommendations.
-              </div>
-            )}
-          </div>
+              <div className="flex flex-col h-[400px] bg-black/30 rounded-xl border border-slate-800/60 overflow-hidden font-mono text-[12px]">
+                {/* middle bottom section: labels */}
+               <div className="bg-slate-950/50 px-3 py-1.5 border-b border-slate-800/60 text-[10px] text-slate-500 font-bold tracking-wider">
+                 <div className="flex gap-4">
+                   <span className="text-emerald-400 flex items-center gap-1">
+                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Additions
+                   </span>
+                   <span className="text-rose-400 flex items-center gap-1">
+                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Removals
+                   </span>
+                 </div>
+               </div>
+
+
+               {/* middle bottom section: proposed changes code */}
+               <div className="flex-1 p-3 overflow-auto leading-relaxed select-text whitespace-pre">
+                  {(() => {
+                    const originalLines = data.currentCode.split('\n');
+                    const proposedLines = data.proposedCode ? data.proposedCode.split('\n') : [];
+
+                    // fallback: no proposal yet
+                    if (proposedLines.length === 0) {
+                      return originalLines.map((line, idx) => (
+                        <div key={idx} className="hover:bg-slate-800/20 px-2 rounded font-normal text-slate-400">
+                          <span className="inline-block w-6 select-none opacity-30 text-right mr-4">{idx + 1}</span>
+                          {line || ' '}
+                        </div>
+                      ));
+                    }
+
+                    // track original and proposed lines at same time
+                    const renderedElements = [];
+                    let origIdx = 0;
+                    let propIdx = 0;
+
+                    while (origIdx < originalLines.length || propIdx < proposedLines.length) {
+                      const origLine = originalLines[origIdx];
+                      const propLine = proposedLines[propIdx];
+
+                      // case 1: show original lines deleted 
+                      // reaches end of proposed lines but original still has lines 
+                      if (propLine === undefined && origLine !== undefined) {
+                        // render deleted line red
+                        renderedElements.push(
+                          <div key={`rem-${origIdx}`} className="bg-rose-950/20 text-rose-300 border-l-2 border-rose-500 px-2 my-0.5 line-through decoration-rose-500/50">
+                            <span className="inline-block w-6 select-none text-rose-600/60 text-right mr-4">-</span>
+                            {origLine}
+                          </div>
+                        );
+                        origIdx++; // scan next deleted line
+                        continue;
+                      }
+
+                      // Case 2: show added proposed lines
+                      // reaches end of original lines but proposed still has lines 
+                      if (origLine === undefined && propLine !== undefined) {
+                        // render proposed line green 
+                        renderedElements.push(
+                          <div key={`add-${propIdx}`} className="bg-emerald-950/20 text-emerald-300 border-l-2 border-emerald-500 px-2 my-0.5 font-medium">
+                            <span className="inline-block w-6 select-none text-emerald-600/60 text-right mr-4">+</span>
+                            {propLine}
+                          </div>
+                        );
+                        propIdx++; // scan next proposed line
+                        continue;
+                      }
+
+                      // case 3: lines match perfectly(unchanged code)
+                      const cleanOrig = origLine.trim();
+                      const cleanProp = propLine.trim();
+
+                      if (cleanOrig === cleanProp) {
+                        // render line grey 
+                        renderedElements.push(
+                          <div key={`match-${propIdx}`} className="hover:bg-slate-800/10 text-slate-400 px-2 opacity-80">
+                            <span className="inline-block w-6 select-none opacity-20 text-right mr-4">{propIdx + 1}</span>
+                            {propLine || ' '}
+                          </div>
+                        );
+                        // scan next line together
+                        origIdx++;
+                        propIdx++;
+                      } else { // lines do not match 
+                        // case 4: check if line was deleted or inserted
+                        // can proposed pointer see an original line later down the file? 
+                        const existsAheadInProp = proposedLines.slice(propIdx).some(pl => pl.trim() === cleanOrig);
+
+                        if (!existsAheadInProp) { // original line was deleted, render this red 
+                          renderedElements.push(
+                            <div key={`rem-${origIdx}`} className="bg-rose-950/20 text-rose-300 border-l-2 border-rose-500 px-2 my-0.5 line-through decoration-rose-500/50">
+                              <span className="inline-block w-6 select-none text-rose-600/60 text-right mr-4">-</span>
+                              {origLine}
+                            </div>
+                          );
+                          origIdx++; // check if next line matches proposed pointer
+                        } else { // proposed line was inserted, render this green
+                          renderedElements.push(
+                            <div key={`add-${propIdx}`} className="bg-emerald-950/20 text-emerald-300 border-l-2 border-emerald-500 px-2 my-0.5 font-medium">
+                              <span className="inline-block w-6 select-none text-emerald-600/60 text-right mr-4">+</span>
+                              {propLine}
+                            </div>
+                          );
+                          propIdx++; // check if next line matches original pointer 
+                        }
+                      }
+                    }
+
+                    return renderedElements;
+                  })()}
+               </div>
+             </div>
+           ) : (
+             <div className="font-mono text-sm text-slate-400 leading-relaxed bg-black/20 p-4 rounded-lg">
+               Ready for project analysis - Ask agent to recommend code improvements.
+             </div>
+           )}
+         </div>
+
+
         </section>
       </main>
     </div>
