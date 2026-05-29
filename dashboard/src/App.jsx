@@ -244,7 +244,7 @@ export default function ScoutDashboard() {
                         propIdx++;
                       } else { // lines do not match 
                         // case 4: check if line was deleted or inserted
-                        // can proposed pointer see an original line later down the file? 
+                        // can the proposed file eventually come across current line from the original file?
                         const existsAheadInProp = proposedLines.slice(propIdx).some(pl => pl.trim() === cleanOrig);
 
                         if (!existsAheadInProp) { // original line was deleted, render this red 
