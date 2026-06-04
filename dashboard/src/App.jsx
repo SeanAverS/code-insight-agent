@@ -67,12 +67,33 @@ export default function ScoutDashboard() {
               </h2>
         
               {/* left sidebar: current folder title */}
-              <div className="inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-400 max-w-full truncate">
-                <span className="opacity-60">📂</span>
+              <div
+                onClick={() => {
+                  const currentFolder = data?.activeFile ? data.activeFile.replace(/\/$/, '') : ''; // remove slash
+
+                  // do not navigate past root 
+                  if (!currentFolder || currentFolder === '.' || currentFolder === './') return;
+
+                  fetch('/api/select-dir', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ relativePath: currentFolder, goUp: true }),
+                  })
+                    .catch(err => console.error("Error navigating up a directory:", err));
+                }}
+                className={`inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-400 max-w-full truncate select-none transition-colors ${data?.activeFile && data.activeFile !== './' && data.activeFile !== ''
+                    ? 'cursor-pointer hover:bg-blue-500/20 hover:text-blue-300'
+                    : 'cursor-not-allowed opacity-70'
+                  }`}
+                title={data?.activeFile && data.activeFile !== './' ? "Click to go up one folder" : "Root directory"}
+              >
+                <span className="opacity-60">
+                  {data?.activeFile && data.activeFile !== './' && data.activeFile !== '' ? '⬆️' : '📂'}
+                </span>
                 <span className="truncate">
                   {data && data.activeFile
-                    ? data.activeFile.split('/').slice(0, -1).join('/') || './'
-                    : 'root'}
+                    ? data.activeFile.replace(/\/$/, '') || './'
+                    : './'}
                 </span>
               </div>
             </div>
@@ -82,12 +103,28 @@ export default function ScoutDashboard() {
               {data && data.files ? (
                 data.files.map((file, idx) => {
                   const isSelected = data.activeFile && data.activeFile.endsWith(file.name);
+                  const isFile = file.type === 'file';
+
+                  // sidebar navigation requests 
+                  const handleItemClick = () => {
+                    const endpoint = isFile ? '/api/select-file' : '/api/select-dir';
+
+                    fetch(endpoint, {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({ relativePath: file.relativePath }),
+                    })
+                      .catch(err => console.error(`Error updating view for ${file.name}:`, err));
+                  };
+
                   return (
-                    <div 
-                      key={idx} 
-                      className={`flex items-center gap-2 text-sm cursor-default transition-colors ${
-                        isSelected ? 'text-blue-400 font-semibold' : 'text-slate-400 hover:text-blue-400'
-                      }`}
+                    <div
+                      key={idx}
+                      onClick={handleItemClick}
+                      className={`flex items-center gap-2 text-sm transition-all px-2 py-1 rounded-md cursor-pointer select-none ${isSelected
+                          ? 'text-blue-400 font-semibold bg-blue-500/10 border border-blue-500/20'
+                          : 'text-slate-400 hover:text-blue-400 hover:bg-slate-800/40'
+                        }`}
                     >
                       <span>{file.type === 'directory' ? '📂' : '📄'}</span>
                       <span className="truncate">{file.name}</span>
