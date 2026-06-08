@@ -16,7 +16,7 @@ async function exportToDashboard(data) {
       const currentContent = await fs.readFile(dashboardPath, "utf-8");
       oldData = JSON.parse(currentContent);
     } catch (e) {
-      // ignore data.json if it doesnt exist
+      // write new data.json if it doesnt exist
     }
 
     const mergedData = { ...oldData, ...data };
