@@ -7,6 +7,14 @@ import fs from "fs/promises";
 import path from "path";
 import express from "express";
 
+const PROJECT_ROOT = process.env.TARGET_PROJECT_PATH || process.cwd();
+const server = new McpServer({
+  name: "code-insight-agent",
+  version: "1.0.0",
+});
+const app = express();
+app.use(express.json());
+
 // data.json structure 
 const DEFAULT_STATE = {
   projectPath: "",
@@ -17,6 +25,7 @@ const DEFAULT_STATE = {
   lastUpdated: ""
 };
 
+// Utility Functions
 // export agent findings to dashboard 
 async function exportToDashboard(data) {
   const dashboardPath = '/Users/seanasuguitan/Projects/code-insight-agent/dashboard/public/data.json';
@@ -26,14 +35,6 @@ async function exportToDashboard(data) {
     console.error("Bridge Error:", err);
   }
 }
-
-// project agent evaluates  
-const PROJECT_ROOT = process.env.TARGET_PROJECT_PATH || process.cwd();
-
-const server = new McpServer({
-  name: "code-insight-agent",
-  version: "1.0.0",
-});
 
 // format files in folder path for sidebar visual
 async function fetchAndFormatDir(relativeFolderPath) {
@@ -71,6 +72,7 @@ async function handleFileRead(relative_path, proposed_code = "") {
   });
 }
 
+// MCP tools   
 // list files in project 
 server.tool(
   "list_files",
@@ -113,10 +115,7 @@ server.tool(
   }
 );
 
-// grab ui intention for Claude 
-const app = express();
-app.use(express.json());
-
+// API Routes 
 // click a file to read  
 app.post("/api/select-file", async (req, res) => {
   const { relativePath } = req.body; 
@@ -126,10 +125,6 @@ app.post("/api/select-file", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
-});
-
-app.listen(5050, () => {
-  console.error("Dashboard Bridge API listening on http://localhost:5050");
 });
 
 // click a folder to navigate to 
@@ -156,6 +151,10 @@ app.post("/api/select-dir", async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+app.listen(5050, () => {
+  console.error("Dashboard Bridge API listening on http://localhost:5050");
 });
 
 async function main() {
