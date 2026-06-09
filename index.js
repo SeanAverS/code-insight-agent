@@ -7,20 +7,21 @@ import fs from "fs/promises";
 import path from "path";
 import express from "express";
 
+// data.json structure 
+const DEFAULT_STATE = {
+  projectPath: "",
+  files: [],
+  activeFile: null,
+  currentCode: "",
+  proposedCode: "",
+  lastUpdated: ""
+};
+
 // export agent findings to dashboard 
 async function exportToDashboard(data) {
   const dashboardPath = '/Users/seanasuguitan/Projects/code-insight-agent/dashboard/public/data.json';
   try {
-    let oldData = {};
-    try {
-      const currentContent = await fs.readFile(dashboardPath, "utf-8");
-      oldData = JSON.parse(currentContent);
-    } catch (e) {
-      // write new data.json if it doesnt exist
-    }
-
-    const mergedData = { ...oldData, ...data };
-    await fs.writeFile(dashboardPath, JSON.stringify(mergedData, null, 2));
+    await fs.writeFile(dashboardPath, JSON.stringify({ ...DEFAULT_STATE, ...data }, null, 2));
   } catch (err) {
     console.error("Bridge Error:", err);
   }
@@ -48,6 +49,7 @@ async function fetchAndFormatDir(relativeFolderPath) {
 
 // read chosen file + other files in same folder
 async function handleFileRead(relative_path, proposed_code = "") {
+  
   // chosen file 
   const cleanRelativePath = relative_path.replace(/^\.?\/+/, ""); // remove beginning slashes
   const chosenFilePath = path.join(PROJECT_ROOT, cleanRelativePath); 
@@ -61,7 +63,6 @@ async function handleFileRead(relative_path, proposed_code = "") {
   const fileList = await fetchAndFormatDir(cleanFolderDir);
 
   await exportToDashboard({
-    projectPath: PROJECT_ROOT,
     files: fileList,                   
     activeFile: cleanRelativePath,         
     currentCode: content,    
@@ -82,9 +83,8 @@ server.tool(
 
       // write project directory to data.json
       await exportToDashboard({
-        projectPath: PROJECT_ROOT,
         files: fileList,
-        lastUpdated: new Date().toLocaleTimeString() // time only
+        lastUpdated: new Date().toLocaleTimeString() 
       });
 
       // raw names list 
@@ -147,7 +147,6 @@ app.post("/api/select-dir", async (req, res) => {
     const fileList = await fetchAndFormatDir(relativePath);
 
     await exportToDashboard({
-      projectPath: PROJECT_ROOT,
       files: fileList,
       activeFile: relativePath ? `${relativePath}/` : './', // handle root dir 
       lastUpdated: new Date().toLocaleTimeString()
