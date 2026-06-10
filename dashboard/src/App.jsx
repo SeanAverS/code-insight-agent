@@ -295,7 +295,9 @@ export default function ScoutDashboard() {
              </div>
            ) : (
              <div className="font-mono text-sm text-slate-400 leading-relaxed bg-black/20 p-4 rounded-lg">
-               Ready for project analysis - Ask agent to recommend code improvements.
+               To See Proposed Changes: <br /> 
+               1. click a file <br />
+               2. tell agent "read [File Path] and suggest changes in dashboard"
              </div>
            )}
          </div>
