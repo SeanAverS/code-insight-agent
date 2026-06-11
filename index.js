@@ -8,6 +8,7 @@ import path from "path";
 import express from "express";
 
 const PROJECT_ROOT = process.env.TARGET_PROJECT_PATH || process.cwd();
+const DASHBOARD_DATA_PATH = path.join(process.cwd(), 'dashboard', 'public', 'data.json');
 const server = new McpServer({
   name: "code-insight-agent",
   version: "1.0.0",
@@ -16,7 +17,7 @@ const app = express();
 app.use(express.json());
 
 // data.json structure 
-const DEFAULT_STATE = {
+const DEFAULT_PROPS = {
   projectPath: "",
   files: [],
   activeFile: null,
@@ -26,79 +27,98 @@ const DEFAULT_STATE = {
 };
 
 // Utility Functions
-// export agent findings to dashboard 
-async function exportToDashboard(data) {
-  const dashboardPath = '/Users/seanasuguitan/Projects/code-insight-agent/dashboard/public/data.json';
+
+/**
+ * save latest property states for dashboard 
+ * @param {object} data - full or partial DEFAULT_PROPS properties
+ */
+async function saveDashboardProps(data) {
   try {
-    await fs.writeFile(dashboardPath, JSON.stringify({ ...DEFAULT_STATE, ...data }, null, 2));
+    await fs.writeFile(DASHBOARD_DATA_PATH, JSON.stringify({ ...DEFAULT_PROPS, ...data }, null, 2));
   } catch (err) {
     console.error("Bridge Error:", err);
   }
 }
 
-// format files in folder path for sidebar visual
-async function fetchAndFormatDir(relativeFolderPath) {
-  const absoluteFolderPath = path.join(PROJECT_ROOT, relativeFolderPath || "");
-  const entries = await fs.readdir(absoluteFolderPath, { withFileTypes: true });
+/** 
+ * list directory files for sidebar 
+ * @param {string} dirPath - of chosen file
+ * @returns {object} - metadata for directory files 
+*/
+async function listDirectory(dirPath) {
+  const directory = path.join(PROJECT_ROOT, dirPath || "");
+  const fileList = await fs.readdir(directory, { withFileTypes: true });
 
-  return entries.map(e => ({
+  return fileList.map(e => ({
     name: e.name,
     type: e.isDirectory() ? 'directory' : 'file',
-    relativePath: relativeFolderPath ? `${relativeFolderPath}/${e.name}` : e.name
+    relativePath: dirPath ? `${dirPath}/${e.name}` : e.name 
   }));
 }
 
-// read chosen file + other files in same folder
-async function handleFileRead(relative_path, proposed_code = "") {
+/**
+ * load file and it's directory siblings + agent proposed code into dashboard
+ * @param {string} dirPath - of chosen file 
+ * @param {string} [proposedCode=""] - code suggestion 
+ */
+async function updateDashboardUI(dirPath, proposedCode = "") {
+  const file = dirPath.replace(/^\.?\/?/, ""); // remove slashes 
+  const folder = path.dirname(file) === '.' ? '' : path.dirname(file);
   
-  // chosen file 
-  const cleanRelativePath = relative_path.replace(/^\.?\/+/, ""); // remove beginning slashes
-  const chosenFilePath = path.join(PROJECT_ROOT, cleanRelativePath); 
-  const content = await fs.readFile(chosenFilePath, "utf-8");
+  // load file and directory siblings
+  const [code, fileList] = await Promise.all([
+    fs.readFile(path.join(PROJECT_ROOT, file), "utf-8"),
+    listDirectory(folder) 
+  ]);
 
-  // other files in chosen file folder 
-  const currentFolder = path.dirname(cleanRelativePath); 
-  const cleanFolderDir = currentFolder === '.' ? '' : currentFolder; // handle root path 
- 
-  // read and format files 
-  const fileList = await fetchAndFormatDir(cleanFolderDir);
-
-  await exportToDashboard({
-    files: fileList,                   
-    activeFile: cleanRelativePath,         
-    currentCode: content,    
-    proposedCode: proposed_code,   
-    lastUpdated: new Date().toLocaleTimeString() 
+  await saveDashboardProps({
+    files: fileList,
+    activeFile: file,
+    currentCode: code, 
+    proposedCode: proposedCode
   });
 }
 
-// MCP tools   
-// list files in project 
+
+// MCP Tools   
+
+/**
+ * Tool: list_files
+ * Description: let AI see directory contents 
+ */
 server.tool(
   "list_files",
   "Explore the structure of the target project",
   { relative_path: z.string().default("") },
   async ({ relative_path }) => {
     try {
-      // read and format files 
-      const fileList = await fetchAndFormatDir(relative_path);
+      const fileList = await listDirectory(relative_path);
 
-      // write project directory to data.json
-      await exportToDashboard({
+      await saveDashboardProps({
         files: fileList,
-        lastUpdated: new Date().toLocaleTimeString() 
       });
 
-      // raw names list 
-      const list = fileList.map(f => f.type === 'directory' ? `[DIR] ${f.name}` : f.name).join("\n");
-      return { content: [{ type: "text", text: list || "(empty)" }] };
+      // convert files into readable strings 
+      const readableList = fileList.map(f => {
+        if (f.type === 'directory') {
+          return `[DIR] ${f.name}`;
+        } else {
+          return f.name;
+        }
+      }).join("\n");
+
+      // send strings to AI 
+      return { content: [{ type: "text", text: readableList || "(empty)" }] };
     } catch (error) {
       return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
     }
   }
 );
 
-// read files in project 
+/**
+ * Tool: read_file
+ * Description: let AI read directory contents 
+ */
 server.tool(
   "read_file",
   "Read code from the target project for analysis",
@@ -107,7 +127,9 @@ server.tool(
   },
   async ({ relative_path, proposed_code }) => {
     try {
-      await handleFileRead(relative_path, proposed_code);
+      await updateDashboardUI(relative_path, proposed_code);
+      
+      // send contents to AI 
       return { content: [{ type: "text", text: `Successfully loaded context for ${relative_path}` }] };
     } catch (error) {
       return { content: [{ type: "text", text: `Error: ${error.message}` }], isError: true };
@@ -116,11 +138,12 @@ server.tool(
 );
 
 // API Routes 
+
 // click a file to read  
 app.post("/api/select-file", async (req, res) => {
   const { relativePath } = req.body; 
   try {
-    await handleFileRead(relativePath, ""); 
+    await updateDashboardUI(relativePath, ""); 
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -138,10 +161,9 @@ app.post("/api/select-dir", async (req, res) => {
       relativePath = parts.join('/'); // reassemble path
     }
 
-    // read and format folder items 
-    const fileList = await fetchAndFormatDir(relativePath);
+    const fileList = await listDirectory(relativePath);
 
-    await exportToDashboard({
+    await saveDashboardProps({
       files: fileList,
       activeFile: relativePath ? `${relativePath}/` : './', // handle root dir 
       lastUpdated: new Date().toLocaleTimeString()
