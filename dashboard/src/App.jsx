@@ -74,6 +74,7 @@ export default function ScoutDashboard() {
                   // do not navigate past root 
                   if (!currentFolder || currentFolder === '.' || currentFolder === './') return;
 
+                  // current directory request on navigation up  
                   fetch('/api/select-dir', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -81,15 +82,18 @@ export default function ScoutDashboard() {
                   })
                     .catch(err => console.error("Error navigating up a directory:", err));
                 }}
+
+                // current folder name display 
                 className={`inline-flex items-center gap-1.5 px-2 py-1 rounded bg-blue-500/10 border border-blue-500/20 text-xs font-mono text-blue-400 max-w-full truncate select-none transition-colors ${data?.activeFile && data.activeFile !== './' && data.activeFile !== ''
                     ? 'cursor-pointer hover:bg-blue-500/20 hover:text-blue-300'
                     : 'cursor-not-allowed opacity-70'
                   }`}
                 title={data?.activeFile && data.activeFile !== './' ? "Click to go up one folder" : "Root directory"}
               >
+                {/* handle root icon and name display */}
                 <span className="opacity-60">
-                  {data?.activeFile && data.activeFile !== './' && data.activeFile !== '' ? '⬆️' : '📂'}
-                </span>
+                  {data?.activeFile && data.activeFile !== './' && data.activeFile !== '' ? '⬆️' : '📂'} 
+                </span> 
                 <span className="truncate">
                   {data && data.activeFile
                     ? data.activeFile.replace(/\/$/, '') || './'
@@ -133,7 +137,7 @@ export default function ScoutDashboard() {
                 })
               ) : (
                 <div className="opacity-50 italic text-sm text-slate-500">
-                  Prompt agent for improvements to desired file
+                  Nothing in here
                 </div>
               )}
             </div>
@@ -155,6 +159,7 @@ export default function ScoutDashboard() {
                   <BarChart data={data.files.slice(0, 20)}> 
                     <XAxis dataKey="name" hide />
                     <Tooltip
+                      cursor={false}
                       contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
                       itemStyle={{ color: '#60a5fa' }}
                     />
@@ -293,7 +298,7 @@ export default function ScoutDashboard() {
                   })()}
                </div>
              </div>
-           ) : (
+           ) : ( // instructions to see changes on dashboard
              <div className="font-mono text-sm text-slate-400 leading-relaxed bg-black/20 p-4 rounded-lg">
                To See Proposed Changes: <br /> 
                1. click a file <br />
