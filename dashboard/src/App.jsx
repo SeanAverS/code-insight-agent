@@ -5,6 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recha
 export default function ScoutDashboard() {
   const [data, setData] = useState(null);
   const [isAgentConnected, setIsAgentConnected] = useState(false);
+  const hasChanges = data?.proposedCode && data.proposedCode !== data.currentCode;
 
   // check agent connection status
   useEffect(() => {
@@ -176,29 +177,41 @@ export default function ScoutDashboard() {
 
           {/* middle bottom section */}
           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center justify-between mb-2">
               <h2 className="text-sm font-semibold flex items-center gap-2">
-                <MessageSquareCode size={16} className="text-purple-400" /> Proposed Changes
+                {/* handle file with proposed or no proposed changes */}
+                <MessageSquareCode size={16} className={hasChanges ? "text-purple-400" : "text-slate-400"} />
+                {hasChanges ? "Proposed Changes" : "File Contents"}
               </h2>
+             
               {data && data.activeFile && (
-                <span className="text-[10px] font-mono text-slate-500">{data.activeFile}</span>
+                <span className="text-[11px] font-mono text-slate-500">{data.activeFile}</span>
               )}
             </div>
 
+              {/* prompt instructions */}
+              {!hasChanges && (
+                <span className="text-[12px] text-slate-400 italic block mb-3">
+                  Prompt: "suggest changes for [File Path] on dashboard"
+                </span>
+              )}
 
             {data && data.currentCode ? (
               <div className="flex flex-col h-[400px] bg-black/30 rounded-xl border border-slate-800/60 overflow-hidden font-mono text-[12px]">
-                {/* middle bottom section: labels */}
-               <div className="bg-slate-950/50 px-3 py-1.5 border-b border-slate-800/60 text-[10px] text-slate-500 font-bold tracking-wider">
-                 <div className="flex gap-4">
-                   <span className="text-emerald-400 flex items-center gap-1">
-                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Additions
-                   </span>
-                   <span className="text-rose-400 flex items-center gap-1">
-                     <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Removals
-                   </span>
-                 </div>
-               </div>
+
+                {/* render legend for file with proposed changes */}
+                {hasChanges && (
+                  <div className="bg-slate-950/50 px-3 py-1.5 border-b border-slate-800/60 text-[10px] text-slate-500 font-bold tracking-wider">
+                    <div className="flex gap-4">
+                      <span className="text-emerald-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Additions
+                      </span>
+                      <span className="text-rose-400 flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Removals
+                      </span>
+                    </div>
+                  </div>
+                )}
 
 
                {/* middle bottom section: proposed changes code */}
@@ -300,9 +313,7 @@ export default function ScoutDashboard() {
              </div>
            ) : ( // instructions to see changes on dashboard
              <div className="font-mono text-sm text-slate-400 leading-relaxed bg-black/20 p-4 rounded-lg">
-               To See Proposed Changes: <br /> 
-               1. click a file <br />
-               2. tell agent "read [File Path] and suggest changes in dashboard"
+              Click a file to see it's code, then Prompt to see agent suggestions
              </div>
            )}
          </div>
