@@ -7,7 +7,7 @@ import fs from "fs/promises";
 import path from "path";
 import express from "express";
 
-const PROJECT_ROOT = process.env.TARGET_PROJECT_PATH || process.cwd();
+const PROJECT_ROOT = "/Users/seanasuguitan/Projects/parts-supplier-sim" // TEMP PATH
 const DASHBOARD_DATA_PATH = path.join(process.cwd(), 'dashboard', 'public', 'data.json');
 const server = new McpServer({
   name: "code-insight-agent",
@@ -142,10 +142,12 @@ server.tool(
 // click a file to read  
 app.post("/api/select-file", async (req, res) => {
   const { relativePath } = req.body; 
+  console.log("Attempting to load file:", relativePath); // Force a log
   try {
     await updateDashboardUI(relativePath, ""); 
     res.json({ success: true });
   } catch (err) {
+    console.error("CRASHED HERE:", err); // Force the error to print
     res.status(500).json({ error: err.message });
   }
 });
