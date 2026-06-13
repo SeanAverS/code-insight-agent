@@ -35,7 +35,7 @@ const DEFAULT_PROPS = {
  */
 async function saveDashboardProps(data) {
   try {
-    // This line ensures the folder exists before writing
+    // ensures folder exists before write
     await fs.mkdir(path.dirname(DASHBOARD_DATA_PATH), { recursive: true });
     
     await fs.writeFile(DASHBOARD_DATA_PATH, JSON.stringify({ ...DEFAULT_PROPS, ...data }, null, 2));
