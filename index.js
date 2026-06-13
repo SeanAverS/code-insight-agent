@@ -1,5 +1,6 @@
 // An agent Harness using MCP to list and read files for an entire project 
 
+import { CONFIG } from './config.js'; 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -7,8 +8,8 @@ import fs from "fs/promises";
 import path from "path";
 import express from "express";
 
-const PROJECT_ROOT = "/Users/seanasuguitan/Projects/parts-supplier-sim" // TEMP PATH
-const DASHBOARD_DATA_PATH = path.join(process.cwd(), 'dashboard', 'public', 'data.json');
+const PROJECT_ROOT = CONFIG.PROJECT_ROOT;
+const DASHBOARD_DATA_PATH = CONFIG.DASHBOARD_DATA_PATH;
 const server = new McpServer({
   name: "code-insight-agent",
   version: "1.0.0",
@@ -34,6 +35,9 @@ const DEFAULT_PROPS = {
  */
 async function saveDashboardProps(data) {
   try {
+    // This line ensures the folder exists before writing
+    await fs.mkdir(path.dirname(DASHBOARD_DATA_PATH), { recursive: true });
+    
     await fs.writeFile(DASHBOARD_DATA_PATH, JSON.stringify({ ...DEFAULT_PROPS, ...data }, null, 2));
   } catch (err) {
     console.error("Bridge Error:", err);
@@ -142,7 +146,7 @@ server.tool(
 // click a file to read  
 app.post("/api/select-file", async (req, res) => {
   const { relativePath } = req.body; 
-  console.log("Attempting to load file:", relativePath); // Force a log
+  // console.log("Attempting to load file:", relativePath); // Force a log
   try {
     await updateDashboardUI(relativePath, ""); 
     res.json({ success: true });
