@@ -186,7 +186,6 @@ server.tool(
 // click a file to read  
 app.post("/api/select-file", async (req, res) => {
   const { relativePath } = req.body; 
-  // console.log("Attempting to load file:", relativePath); // Force a log
   try {
     await updateDashboardUI(relativePath, ""); 
     res.json({ success: true });
