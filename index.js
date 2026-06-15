@@ -141,6 +141,46 @@ server.tool(
   }
 );
 
+/**
+ * Tool: write_file
+ * Description: Overwrite contents of a file
+ */
+server.tool(
+  "write_file",
+  "Overwrite a file in the target project with new content",
+  {
+    relative_path: z.string(),
+    content: z.string(),
+  },
+  async ({ relative_path, content }) => {
+    try {
+      const targetPath = path.resolve(PROJECT_ROOT, relative_path);
+      
+      if (!targetPath.startsWith(path.resolve(PROJECT_ROOT))) {
+        throw new Error("Security Violation: Attempted to write outside of project root.");
+      }
+
+      // create backup for unchanged file 
+      try {
+        await fs.copyFile(targetPath, `${targetPath}.bak`);
+      } catch (e) { /* ignore if file doesn't exist */ }
+
+      await fs.writeFile(targetPath, content, "utf-8");
+      
+      await updateDashboardUI(relative_path, "");
+
+      return { 
+        content: [{ type: "text", text: `Successfully updated ${relative_path}` }] 
+      };
+    } catch (error) {
+      return { 
+        content: [{ type: "text", text: `Error: ${error.message}` }], 
+        isError: true 
+      };
+    }
+  }
+);
+
 // API Routes 
 
 // click a file to read  
@@ -177,6 +217,27 @@ app.post("/api/select-dir", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+// apply proposed changes from agent to file 
+app.post("/api/apply-changes", async (req, res) => {
+  const { relative_path, content } = req.body;
+  try {
+    const targetPath = path.resolve(PROJECT_ROOT, relative_path);
+    
+    if (!targetPath.startsWith(path.resolve(PROJECT_ROOT))) {
+      return res.status(403).json({ error: "Access Denied" });
+    }
+
+    await fs.writeFile(targetPath, content, "utf-8");
+    await updateDashboardUI(relative_path, ""); 
+    
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Apply Changes Error:", err);
     res.status(500).json({ error: err.message });
   }
 });

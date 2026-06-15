@@ -177,12 +177,32 @@ export default function ScoutDashboard() {
 
           {/* middle bottom section */}
           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
-            <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center justify-between mb-2 gap-5">
               <h2 className="text-sm font-semibold flex items-center gap-2">
                 {/* handle file with proposed or no proposed changes */}
                 <MessageSquareCode size={16} className={hasChanges ? "text-purple-400" : "text-slate-400"} />
                 {hasChanges ? "Proposed Changes" : "File Contents"}
               </h2>
+
+              {hasChanges && (
+                <button
+                  onClick={() => {
+                    fetch('/api/apply-changes', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        relative_path: data.activeFile,
+                        content: data.proposedCode
+                      }),
+                    })
+                      .then(() => alert("Changes applied!"))
+                      .catch(err => console.error("Error applying changes:", err));
+                  }}
+                  className="text-[10px] uppercase font-bold tracking-wider bg-purple-500/20 text-purple-300 border border-purple-500/30 px-2 py-1 rounded-md hover:bg-purple-500/30 transition-all"
+                >
+                  Apply Changes
+                </button>
+              )}
              
               {data && data.activeFile && (
                 <span className="text-[11px] font-mono text-slate-500">{data.activeFile}</span>
