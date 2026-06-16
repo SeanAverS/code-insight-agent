@@ -50,12 +50,21 @@ function getSafePath(relativePath) {
  */
 async function saveDashboardProps(data) {
   try {
+    if (data.files && Array.isArray(data.files)) {
+      for (const file of data.files) {
+        if (file.relativePath) {
+          getSafePath(file.relativePath); 
+        }
+      }
+    }
+    
     // ensures folder exists before write
     await fs.mkdir(path.dirname(DASHBOARD_DATA_PATH), { recursive: true });
     
     await fs.writeFile(DASHBOARD_DATA_PATH, JSON.stringify({ ...DEFAULT_PROPS, ...data }, null, 2));
   } catch (err) {
-    console.error("Bridge Error:", err);
+    console.error("CRITICAL: Dashboard state blocked due to path security violation:", err.message);
+    throw err; 
   }
 }
 
