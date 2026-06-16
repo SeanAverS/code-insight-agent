@@ -241,6 +241,17 @@ app.post("/api/apply-changes", async (req, res) => {
   }
 });
 
+// re-read file to always have latest state for data.json 
+app.post("/api/refresh", async (req, res) => {
+  const { relativePath } = req.body;
+  try {
+    await updateDashboardUI(relativePath, ""); 
+    res.json({ success: true, message: "Dashboard synced with disk" });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 app.listen(5050, () => {
   console.error("Dashboard Bridge API listening on http://localhost:5050");
 });

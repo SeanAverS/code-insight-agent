@@ -184,6 +184,7 @@ export default function ScoutDashboard() {
                 {hasChanges ? "Proposed Changes" : "File Contents"}
               </h2>
 
+              {/* apply proposed changes */}
               {hasChanges && (
                 <button
                   onClick={() => {
@@ -203,7 +204,28 @@ export default function ScoutDashboard() {
                   Apply Changes
                 </button>
               )}
+
+              {/* sync dashboard to local file state */}
+              {data && data.activeFile && (
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => {
+                      fetch('/api/refresh', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ relativePath: data.activeFile }),
+                      })
+                        .catch(err => console.error("Sync error:", err));
+                    }}
+                    className="text-[11px] text-slate-500 hover:text-blue-400 transition-colors"
+                    title="Sync dashboard with actual file content"
+                  >
+                    🔄 Sync
+                  </button>
+                </div>
+              )}
              
+             {/* the current selected file */}
               {data && data.activeFile && (
                 <span className="text-[11px] font-mono text-slate-500">{data.activeFile}</span>
               )}
