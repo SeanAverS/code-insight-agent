@@ -27,6 +27,21 @@ const DEFAULT_PROPS = {
   lastUpdated: ""
 };
 
+/**
+ * safely ensure path stays in PROJECT_ROOT
+ * @param {string} relativePath - current path for analyzed file 
+ * @returns {string} - safe path
+ */
+function getSafePath(relativePath) {
+  const resolved = path.resolve(PROJECT_ROOT, relativePath);
+   
+  if (!resolved.startsWith(PROJECT_ROOT + path.sep) && resolved !== PROJECT_ROOT) {
+    throw new Error(`Security Violation: Path traversal blocked for ${relativePath}`);
+  }
+  
+  return resolved;
+}
+
 // Utility Functions
 
 /**
@@ -96,6 +111,7 @@ server.tool(
   { relative_path: z.string().default("") },
   async ({ relative_path }) => {
     try {
+      getSafePath(relative_path);
       const fileList = await listDirectory(relative_path);
 
       await saveDashboardProps({
@@ -131,6 +147,7 @@ server.tool(
   },
   async ({ relative_path, proposed_code }) => {
     try {
+      getSafePath(relative_path);
       await updateDashboardUI(relative_path, proposed_code);
       
       // send contents to AI 
@@ -154,19 +171,14 @@ server.tool(
   },
   async ({ relative_path, content }) => {
     try {
-      const targetPath = path.resolve(PROJECT_ROOT, relative_path);
-      
-      if (!targetPath.startsWith(path.resolve(PROJECT_ROOT))) {
-        throw new Error("Security Violation: Attempted to write outside of project root.");
-      }
+      const safePath = getSafePath(relative_path);
 
       // create backup for unchanged file 
       try {
-        await fs.copyFile(targetPath, `${targetPath}.bak`);
+        await fs.copyFile(safePath, `${safePath}.bak`);
       } catch (e) { /* ignore if file doesn't exist */ }
 
-      await fs.writeFile(targetPath, content, "utf-8");
-      
+      await fs.writeFile(safePath, content, "utf-8"); // Write to validated path
       await updateDashboardUI(relative_path, "");
 
       return { 
@@ -187,6 +199,7 @@ server.tool(
 app.post("/api/select-file", async (req, res) => {
   const { relativePath } = req.body; 
   try {
+    getSafePath(relativePath);
     await updateDashboardUI(relativePath, ""); 
     res.json({ success: true });
   } catch (err) {
@@ -206,6 +219,7 @@ app.post("/api/select-dir", async (req, res) => {
       relativePath = parts.join('/'); // reassemble path
     }
 
+    getSafePath(relativePath || "");
     const fileList = await listDirectory(relativePath);
 
     await saveDashboardProps({
@@ -225,13 +239,8 @@ app.post("/api/select-dir", async (req, res) => {
 app.post("/api/apply-changes", async (req, res) => {
   const { relative_path, content } = req.body;
   try {
-    const targetPath = path.resolve(PROJECT_ROOT, relative_path);
-    
-    if (!targetPath.startsWith(path.resolve(PROJECT_ROOT))) {
-      return res.status(403).json({ error: "Access Denied" });
-    }
-
-    await fs.writeFile(targetPath, content, "utf-8");
+    const safePath = getSafePath(relative_path);
+    await fs.writeFile(safePath, content, "utf-8");
     await updateDashboardUI(relative_path, ""); 
     
     res.json({ success: true });
@@ -245,6 +254,7 @@ app.post("/api/apply-changes", async (req, res) => {
 app.post("/api/refresh", async (req, res) => {
   const { relativePath } = req.body;
   try {
+    getSafePath(relativePath);
     await updateDashboardUI(relativePath, ""); 
     res.json({ success: true, message: "Dashboard synced with disk" });
   } catch (err) {
