@@ -80,7 +80,7 @@ async function listDirectory(dirPath) {
   return fileList.map(e => ({
     name: e.name,
     type: e.isDirectory() ? 'directory' : 'file',
-    relativePath: dirPath ? `${dirPath}/${e.name}` : e.name 
+    relativePath: dirPath ? path.join(dirPath, e.name) : e.name
   }));
 }
 
