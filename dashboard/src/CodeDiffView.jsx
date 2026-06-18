@@ -6,21 +6,43 @@ export default function DiffViewer({ currentCode, proposedCode }) {
   const originalLines = currentCode.split('\n');
   const proposedLines = proposedCode ? proposedCode.split('\n') : [];
 
+  // render consistent line alignment 
+  const renderRow = (content, type, key) => {
+  let rowClasses = "grid grid-cols-[2rem_1fr] items-center min-h-[1.5rem] font-mono ";
+  let symbol = "-";
+  
+  if (type === 'remove') {
+    rowClasses += "bg-rose-950/20 text-rose-300 line-through decoration-rose-500/50";
+    symbol = "-";
+  } else if (type === 'add') {
+    rowClasses += "bg-emerald-950/20 text-emerald-300 font-medium";
+    symbol = "+";
+  } else { // no proposed changes yet  
+    rowClasses += "text-slate-400 hover:bg-slate-800/10";
+    symbol = "-";
+  }
+
+  return (
+    <div key={key} className={rowClasses}>
+      {/* column 1: line alignement */}
+      <span className="text-right pr-4 select-none opacity-60 font-bold">
+        {symbol}
+      </span>
+      {/* column 2: code */}
+      <span className="whitespace-pre overflow-hidden">{content || ' '}</span>
+    </div>
+  );
+};
+
   // fallback: no proposal yet
   if (proposedLines.length === 0) {
-    return originalLines.map((line, idx) => (
-      <div key={idx} className="hover:bg-slate-800/20 px-2 rounded font-normal text-slate-400 flex">
-        <span className="inline-block w-8 select-none opacity-40 text-right mr-4 text-slate-500">{idx + 1}</span>
-        {line || ' '}
-      </div>
-    ));
+    return originalLines.map((line, idx) => renderRow(line, 'match', `fallback-${idx}`));
   }
 
   // track original and proposed lines at same time
   const renderedElements = [];
   let origIdx = 0;
   let propIdx = 0;
-  let lineNum = 1;
 
   while (origIdx < originalLines.length || propIdx < proposedLines.length) {
     const origLine = originalLines[origIdx];
@@ -30,12 +52,7 @@ export default function DiffViewer({ currentCode, proposedCode }) {
     // reaches end of proposed lines but original still has lines 
     if (propLine === undefined && origLine !== undefined) {
       // render deleted line red
-      renderedElements.push(
-        <div key={`rem-${origIdx}`} className="bg-rose-950/20 text-rose-300 border-l-2 border-rose-500 px-2 my-0.5 line-through decoration-rose-500/50 flex">
-          <span className="inline-block w-8 select-none text-rose-600/60 text-right mr-4">-</span>
-          {origLine}
-        </div>
-      );
+      renderedElements.push(renderRow(origLine, 'remove', `remove-${origIdx}`));
       origIdx++; // scan next deleted line
       continue;
     }
@@ -44,12 +61,7 @@ export default function DiffViewer({ currentCode, proposedCode }) {
     // reaches end of original lines but proposed still has lines 
     if (origLine === undefined && propLine !== undefined) {
       // render proposed line green 
-      renderedElements.push(
-        <div key={`add-${propIdx}`} className="bg-emerald-950/20 text-emerald-300 border-l-2 border-emerald-500 px-2 my-0.5 font-medium flex">
-          <span className="inline-block w-8 select-none text-emerald-600/60 text-right mr-4">+</span>
-          {propLine}
-        </div>
-      );
+      renderedElements.push(renderRow(propLine, 'add', `add-${propIdx}`));
       propIdx++; // scan next proposed line
       continue;
     }
@@ -60,12 +72,7 @@ export default function DiffViewer({ currentCode, proposedCode }) {
 
     if (cleanOrig === cleanProp) {
       // render line grey 
-      renderedElements.push(
-        <div key={`match-${propIdx}`} className="hover:bg-slate-800/10 text-slate-400 px-2 opacity-80 flex">
-          <span className="inline-block w-8 select-none opacity-40 text-right mr-4 text-slate-500">{lineNum++}</span>
-          {propLine || ' '}
-        </div>
-      );
+      renderedElements.push(renderRow(propLine, 'match', `match-${propIdx}`));
       // scan next line together
       origIdx++;
       propIdx++;
@@ -75,24 +82,14 @@ export default function DiffViewer({ currentCode, proposedCode }) {
       const existsAheadInProp = proposedLines.slice(propIdx).some(pl => pl.trim() === cleanOrig);
 
       if (!existsAheadInProp) { // original line was deleted, render this red 
-        renderedElements.push(
-          <div key={`rem-${origIdx}`} className="bg-rose-950/20 text-rose-300 border-l-2 border-rose-500 px-2 my-0.5 line-through decoration-rose-500/50 flex">
-            <span className="inline-block w-8 select-none text-rose-600/60 text-right mr-4">-</span>
-            {origLine}
-          </div>
-        );
+        renderedElements.push(renderRow(origLine, 'remove', `remove-${origIdx}`));
         origIdx++; // check if next line matches proposed pointer
       } else { // proposed line was inserted, render this green
-        renderedElements.push(
-          <div key={`add-${propIdx}`} className="bg-emerald-950/20 text-emerald-300 border-l-2 border-emerald-500 px-2 my-0.5 font-medium flex">
-            <span className="inline-block w-8 select-none text-emerald-600/60 text-right mr-4">+</span>
-            {propLine}
-          </div>
-        );
+        renderedElements.push(renderRow(propLine, 'add', `add-${propIdx}`));
         propIdx++; // check if next line matches original pointer 
       }
     }
   }
 
-  return renderedElements;
+  return <div className="border border-slate-800 rounded-lg overflow-hidden">{renderedElements}</div>;
 }
