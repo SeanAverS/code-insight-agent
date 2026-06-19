@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { MessageSquareCode } from 'lucide-react';
-import CodeDiffView from '../CodeDiffView';
+import CodeLineLogic from './CodeLineLogic';
 
 export default function CodeView({ data, hasChanges }) {
     // handle applying agent changes to local file    
@@ -75,7 +75,7 @@ export default function CodeView({ data, hasChanges }) {
 
                 {/* code lines for file after agent changes */}
                 <div className="flex-1 p-3 overflow-auto leading-relaxed">
-                    <CodeDiffView currentCode={data.currentCode} proposedCode={data.proposedCode} />
+                    <CodeLineLogic currentCode={data.currentCode} proposedCode={data.proposedCode} />
                 </div>
             </div>
         </div>

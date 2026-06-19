@@ -1,7 +1,7 @@
 import React from 'react';
 import { Layout, Activity, MessageSquareCode } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import CodeDiffView from './CodeDiffView';
+import CodeDiffView from './components/CodeLineLogic';
 import CodeView from './components/CodeView';
 import FileLengthChart from './components/FileLengthChart';
 import Sidebar from './Sidebar';

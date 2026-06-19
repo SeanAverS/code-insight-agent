@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-export default function DiffViewer({ currentCode, proposedCode }) {
+export default function CodeLineLogic({ currentCode, proposedCode }) {
   const originalLines = currentCode.split('\n');
   const proposedLines = proposedCode ? proposedCode.split('\n') : [];
 
