@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { Layout, FolderTree, Activity, MessageSquareCode, Terminal } from 'lucide-react';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import React from 'react';
+import { Layout, Activity, MessageSquareCode } from 'lucide-react';
+import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import CodeDiffView from './CodeDiffView';
 import Sidebar from './Sidebar';
+import { useDashboardData } from './hooks/useDashboardData';
 
 export default function ScoutDashboard() {
-  const [data, setData] = useState(null);
-  const [isAgentConnected, setIsAgentConnected] = useState(false);
+  const { data, isAgentConnected } = useDashboardData();
   const hasChanges = data?.proposedCode && data.proposedCode !== data.currentCode;
 
   // handle ui display when navigating up a directory 
@@ -32,29 +32,6 @@ export default function ScoutDashboard() {
     })
     .catch(err => console.error(`Error updating view for ${file.name}:`, err));
   };
-
-  // check agent connection status
-  useEffect(() => {
-    const fetchData = () => {
-      fetch('/data.json')
-        .then(res => {
-          if (!res.ok) throw new Error("Offline");
-          return res.json();
-        })
-        .then(json => {
-          setData(json);
-          setIsAgentConnected(true); 
-        })
-        .catch(err => {
-          console.log("Waiting...");
-          setIsAgentConnected(false); 
-        });
-    };
-
-    fetchData();
-    const interval = setInterval(fetchData, 3000); // check for dashboard changes every 3 seconds
-    return () => clearInterval(interval);
-  }, []);
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans flex flex-col">
