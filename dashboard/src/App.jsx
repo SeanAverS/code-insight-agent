@@ -61,9 +61,8 @@ export default function ScoutDashboard() {
         </div>
       </header>
 
-      {/* left sidebar */}
+      {/* Sidebar */}
       <main className="flex-1 grid grid-cols-12 gap-0">
-        {/* left sidebar: title */}
         <Sidebar 
           data={data} 
           onNavigateUp={handleNavigateUp} 
