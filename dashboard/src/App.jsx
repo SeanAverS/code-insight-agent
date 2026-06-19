@@ -2,6 +2,7 @@ import React from 'react';
 import { Layout, Activity, MessageSquareCode } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import CodeDiffView from './CodeDiffView';
+import FileLengthChart from './components/FileLengthChart';
 import Sidebar from './Sidebar';
 import { useDashboardData } from './hooks/useDashboardData';
 
@@ -72,32 +73,7 @@ export default function ScoutDashboard() {
         {/* middle top section */}
         <section className="col-span-9 p-4 space-y-8">
           {/* File Length */}
-          <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-5">
-            <h2 className="text-sm font-semibold flex items-center gap-2">
-              <Activity size={16} className="text-blue-400" /> File Length
-            </h2>
-            {/* bar chart for file lengths */}
-            <div className="h-64">
-              {data && data.files ? (
-                <ResponsiveContainer width="100%" height="100%">
-                  {/* show up to 20 files */}
-                  <BarChart data={data.files.slice(0, 20)}> 
-                    <XAxis dataKey="name" hide />
-                    <Tooltip
-                      cursor={false}
-                      contentStyle={{ backgroundColor: '#1e293b', border: 'none', borderRadius: '8px' }}
-                      itemStyle={{ color: '#60a5fa' }}
-                    />
-                    <Bar dataKey={(file) => file.name.length} fill="#3b82f6" radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              ) : (
-                <div className="h-full flex items-center justify-center text-slate-500 text-sm border border-dashed border-slate-800 rounded-xl">
-                  No data analyzed yet.
-                </div>
-              )}
-            </div>
-          </div>
+          <FileLengthChart files={data?.files} />
 
           {/* middle bottom section */}
           <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-6">
