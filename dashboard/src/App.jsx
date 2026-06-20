@@ -15,11 +15,8 @@ export default function ScoutDashboard() {
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans flex flex-col">
-
-      {/* header */}
       <Header isAgentConnected={isAgentConnected} />
 
-      {/* Sidebar */}
       <main className="flex-1 grid grid-cols-12 gap-0">
         <Sidebar 
           data={data} 
@@ -27,14 +24,9 @@ export default function ScoutDashboard() {
           onFileClick={selectFile}
         />
 
-        {/* middle section */}
         <section className="col-span-9 p-4 space-y-8">
-          {/* chart to visualize file lengths */}
           <FileLengthChart files={data?.files} />
-
-          {/* view latest file state and apply agent changes */}
           <CodeView data={data} hasChanges={hasChanges} />
-
         </section>
       </main>
     </div>
