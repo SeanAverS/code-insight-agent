@@ -1,11 +1,10 @@
 import React from 'react';
-import { Layout, Activity, MessageSquareCode } from 'lucide-react';
-import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import CodeDiffView from './components/CodeLineLogic';
-import CodeView from './components/CodeView';
-import FileLengthChart from './components/FileLengthChart';
-import Sidebar from './Sidebar';
+import { Layout } from 'lucide-react';
+import CodeLineLogic from './components/CodeLineLogic';
 import Header from './components/Header'
+import Sidebar from './Sidebar';
+import FileLengthChart from './components/FileLengthChart';
+import CodeView from './components/CodeView';
 import { useDashboardData } from './hooks/useDashboardData';
 import { useFileExplorer } from './hooks/useFileExplorer';
 
