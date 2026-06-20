@@ -5,6 +5,7 @@ import CodeDiffView from './components/CodeLineLogic';
 import CodeView from './components/CodeView';
 import FileLengthChart from './components/FileLengthChart';
 import Sidebar from './Sidebar';
+import Header from './components/Header'
 import { useDashboardData } from './hooks/useDashboardData';
 
 export default function ScoutDashboard() {
@@ -38,29 +39,8 @@ export default function ScoutDashboard() {
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans flex flex-col">
 
-       {/* top section */}
-      <header className="h-16 border-b border-slate-800 flex items-center px-8 justify-between bg-[#0f172a] sticky top-0 z-10">
-         {/* top section: title */}
-        <div className="flex items-center gap-3">
-          <Layout size={20}></Layout>
-          <h1 className="font-bold text-xl">AGENT <span className="text-blue-400">DASHBOARD</span></h1>
-        </div>
-        
-        {/* top section: agent connection status display */}
-        <div className="flex items-center gap-4 text-xs font-mono">
-          {isAgentConnected ? (
-            <span className="flex items-center gap-2 text-emerald-400 bg-emerald-500/5 px-2.5 py-1.5 border border-emerald-500/10 rounded-md">
-              <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              CONNECTED
-            </span>
-          ) : (
-            <span className="flex items-center gap-2 text-rose-400 bg-rose-500/5 px-2.5 py-1.5 border border-rose-500/10 rounded-md">
-              <div className="w-2 h-2 bg-rose-500 rounded-full" />
-              DISCONNECTED
-            </span>
-          )}
-        </div>
-      </header>
+      {/* header */}
+      <Header isAgentConnected={isAgentConnected} />
 
       {/* Sidebar */}
       <main className="flex-1 grid grid-cols-12 gap-0">
