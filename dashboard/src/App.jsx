@@ -7,34 +7,12 @@ import FileLengthChart from './components/FileLengthChart';
 import Sidebar from './Sidebar';
 import Header from './components/Header'
 import { useDashboardData } from './hooks/useDashboardData';
+import { useFileExplorer } from './hooks/useFileExplorer';
 
 export default function ScoutDashboard() {
   const { data, isAgentConnected } = useDashboardData();
+  const { navigateUp, selectFile } = useFileExplorer();
   const hasChanges = data?.proposedCode && data.proposedCode !== data.currentCode;
-
-  // handle ui display when navigating up a directory 
-  const handleNavigateUp = () => {
-    const currentFolder = data?.activeFile ? data.activeFile.replace(/\/$/, '') : '';
-    if (!currentFolder || currentFolder === '.' || currentFolder === './') return;
-
-    fetch('/api/select-dir', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ relativePath: currentFolder, goUp: true }),
-    })
-    .catch(err => console.error("Error navigating up a directory:", err));
-  };
-
-  // handle ui display when clicking on a file 
-  const handleFileClick = (file) => {
-    const endpoint = file.type === 'file' ? '/api/select-file' : '/api/select-dir';
-    fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ relativePath: file.relativePath }),
-    })
-    .catch(err => console.error(`Error updating view for ${file.name}:`, err));
-  };
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans flex flex-col">
@@ -46,8 +24,8 @@ export default function ScoutDashboard() {
       <main className="flex-1 grid grid-cols-12 gap-0">
         <Sidebar 
           data={data} 
-          onNavigateUp={handleNavigateUp} 
-          onFileClick={handleFileClick} 
+          onNavigateUp={() => navigateUp(data?.activeFile)} 
+          onFileClick={selectFile}
         />
 
         {/* middle section */}
