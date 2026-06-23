@@ -4,7 +4,8 @@ import React from 'react';
 import { Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
-export default function FileLengthChart({ files }) {
+function FileLengthChart({ files }) {
+  console.log("Chart rendering...");
   return (
     <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-5">
 
@@ -30,3 +31,8 @@ export default function FileLengthChart({ files }) {
     </div>
   );
 }
+
+export default React.memo(FileLengthChart, (prevProps, nextProps) => {
+  // Only re-render if file data changes
+  return prevProps.files === nextProps.files;
+});
