@@ -3,7 +3,7 @@
 import React from 'react';
 import { FolderTree } from 'lucide-react';
 
-export default function Sidebar({ data, onNavigateUp, onFileClick }) {
+function Sidebar({ data, onNavigateUp, onFileClick }) {
   return (
     <aside className="col-span-3 border-r border-slate-800 p-6 bg-[#0f172a]/30 flex flex-col justify-between min-h-[calc(100vh-4rem)]">
       <div>
@@ -65,3 +65,5 @@ export default function Sidebar({ data, onNavigateUp, onFileClick }) {
     </aside>
   );
 }
+
+export default React.memo(Sidebar);
