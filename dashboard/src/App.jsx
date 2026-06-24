@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { Layout } from 'lucide-react';
 import CodeLineLogic from './components/CodeLineLogic';
 import Header from './components/Header'
@@ -11,7 +11,15 @@ import { useFileExplorer } from './hooks/useFileExplorer';
 export default function ScoutDashboard() {
   const { data, isAgentConnected } = useDashboardData();
   const { navigateUp, selectFile } = useFileExplorer();
-  const hasChanges = data?.proposedCode && data.proposedCode !== data.currentCode;
+  
+  const hasChanges = useMemo(() => 
+    data?.proposedCode && data.proposedCode !== data.currentCode, 
+    [data?.proposedCode, data?.currentCode]
+  );
+
+  const handleNavigateUp = useCallback(() => {
+    navigateUp(data?.activeFile);
+  }, [navigateUp, data?.activeFile]);
 
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-200 font-sans flex flex-col">
@@ -20,7 +28,7 @@ export default function ScoutDashboard() {
       <main className="flex-1 grid grid-cols-12 gap-0">
         <Sidebar 
           data={data} 
-          onNavigateUp={() => navigateUp(data?.activeFile)} 
+          onNavigateUp={handleNavigateUp} 
           onFileClick={selectFile}
         />
 
