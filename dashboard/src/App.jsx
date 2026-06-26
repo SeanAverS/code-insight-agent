@@ -1,5 +1,4 @@
 import React, { useCallback, useMemo } from 'react';
-import { Layout } from 'lucide-react';
 import CodeLineLogic from './components/CodeLineLogic';
 import Header from './components/Header'
 import Sidebar from './Sidebar';
