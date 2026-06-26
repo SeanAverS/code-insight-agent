@@ -1,30 +1,30 @@
 // view latest file state and apply agent changes
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { MessageSquareCode } from 'lucide-react';
 import CodeLineLogic from './CodeLineLogic';
 
-export default function CodeView({ data, hasChanges }) {
+function CodeView({ data, hasChanges }) {
     // handle applying agent changes to local file    
-    const handleApplyChanges = () => {
+    const handleApplyChanges = useCallback(() => {
         fetch('/api/apply-changes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ relative_path: data.activeFile, content: data.proposedCode }),
+            body: JSON.stringify({ relative_path: data?.activeFile, content: data?.proposedCode }),
         })
             .then(() => alert("Changes applied!"))
             .catch(err => console.error("Error applying changes:", err));
-    };
+    }, [data?.activeFile, data?.proposedCode]);
 
     // handle syncing dashboard to local file state   
-    const handleSync = () => {
+    const handleSync = useCallback(() => {
         fetch('/api/refresh', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ relativePath: data.activeFile }),
+            body: JSON.stringify({ relativePath: data?.activeFile }),
         })
             .catch(err => console.error("Sync error:", err));
-    };
+    }, [data?.activeFile]);
 
     // text if no file selected
     if (!data?.currentCode) {
@@ -81,3 +81,8 @@ export default function CodeView({ data, hasChanges }) {
         </div>
     );
 }
+
+export default React.memo(CodeView, (prev, next) => {
+    // Only re-render if file data changes
+    return prev.data === next.data && prev.hasChanges === next.hasChanges;
+});
