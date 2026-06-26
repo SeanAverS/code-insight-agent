@@ -8,8 +8,10 @@ export function useDashboardData() {
   const lastDataRef = useRef(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = () => {
-      fetch('/data.json')
+      fetch('/data.json', { signal: controller.signal })
         .then(res => {
           if (!res.ok) throw new Error("Offline");
           return res.json();
@@ -22,14 +24,18 @@ export function useDashboardData() {
           }
           setIsAgentConnected(true);
         })
-        .catch(() => {
+        .catch((err) => {
+          if (err.name === 'AbortError') return;
           setIsAgentConnected(false);
         });
     };
 
     fetchData();
     const interval = setInterval(fetchData, 3000);
-    return () => clearInterval(interval);
+    return () => {
+      controller.abort();
+      clearInterval(interval);
+    };
   }, []);
 
   return { data, isAgentConnected };
