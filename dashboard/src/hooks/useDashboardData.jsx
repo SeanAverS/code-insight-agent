@@ -27,6 +27,7 @@ export function useDashboardData() {
         .catch((err) => {
           if (err.name === 'AbortError') return;
           setIsAgentConnected(false);
+          setData(null)
         });
     };
 
