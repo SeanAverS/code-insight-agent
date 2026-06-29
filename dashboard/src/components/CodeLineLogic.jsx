@@ -1,8 +1,8 @@
 // handle display of new and deleted code lines based on an agent's suggested changes 
 
-import React from 'react';
+import React, { memo } from 'react';
 
-export default function CodeLineLogic({ currentCode, proposedCode }) {
+function CodeLineLogic({ currentCode, proposedCode }) {
   const originalLines = currentCode.split('\n');
   const proposedLines = proposedCode ? proposedCode.split('\n') : [];
 
@@ -93,3 +93,5 @@ export default function CodeLineLogic({ currentCode, proposedCode }) {
 
   return <div className="border border-slate-800 rounded-lg overflow-hidden">{renderedElements}</div>;
 }
+
+export default memo(CodeLineLogic);
