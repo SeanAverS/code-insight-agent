@@ -1,10 +1,18 @@
 // view latest file state and apply agent changes
 
-import React, { useCallback } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { MessageSquareCode } from 'lucide-react';
 import CodeLineLogic from './CodeLineLogic';
 
 function CodeView({ data, hasChanges }) {
+    const isMounted = useRef(true);
+
+    // check if component is currently active 
+    useEffect(() => {
+        isMounted.current = true;
+        return () => { isMounted.current = false; };
+    }, []);
+
     // handle applying agent changes to local file    
     const handleApplyChanges = useCallback(() => {
         fetch('/api/apply-changes', {
@@ -12,8 +20,12 @@ function CodeView({ data, hasChanges }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ relative_path: data?.activeFile, content: data?.proposedCode }),
         })
-            .then(() => alert("Changes applied!"))
-            .catch(err => console.error("Error applying changes:", err));
+            .then(() => {
+                if (isMounted.current) alert("Changes applied!");
+            })
+            .catch(err => {
+                if (isMounted.current) console.error("Error applying changes:", err);
+            });
     }, [data?.activeFile, data?.proposedCode]);
 
     // handle syncing dashboard to local file state   
@@ -23,7 +35,9 @@ function CodeView({ data, hasChanges }) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ relativePath: data?.activeFile }),
         })
-            .catch(err => console.error("Sync error:", err));
+            .catch(err => {
+                if (isMounted.current) console.error("Sync error:", err);
+            });
     }, [data?.activeFile]);
 
     // text if no file selected
