@@ -94,4 +94,6 @@ function CodeLineLogic({ currentCode, proposedCode }) {
   return <div className="border border-slate-800 rounded-lg overflow-hidden">{renderedElements}</div>;
 }
 
-export default memo(CodeLineLogic);
+export default memo(CodeLineLogic, (prev, next) => {
+  return prev.currentCode === next.currentCode && prev.proposedCode === next.proposedCode;
+});
