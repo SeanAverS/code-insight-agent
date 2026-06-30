@@ -5,7 +5,6 @@ import { Activity } from 'lucide-react';
 import { BarChart, Bar, XAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 function FileLengthChart({ files }) {
-  console.log("Chart rendering...");
   return (
     <div className="bg-slate-900/50 rounded-2xl border border-slate-800 p-5">
 
