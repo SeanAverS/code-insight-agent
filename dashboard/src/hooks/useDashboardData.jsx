@@ -1,11 +1,25 @@
 // check agent connection status based on data.json fetch 
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback} from 'react';
 
 export function useDashboardData() {
   const [data, setData] = useState(null);
   const [isAgentConnected, setIsAgentConnected] = useState(false);
   const lastDataRef = useRef(null);
+
+  // force refresh for fast UI on navigation
+  const manualRefresh = useCallback(() => {
+    setTimeout(() => {
+      fetch('/data.json')
+        .then(res => res.json())
+        .then(json => {
+          lastDataRef.current = json; 
+          setData(json);
+          setIsAgentConnected(true);
+        })
+        .catch(() => setIsAgentConnected(false));
+    }, 100); 
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -39,5 +53,5 @@ export function useDashboardData() {
     };
   }, []);
 
-  return { data, isAgentConnected };
+  return { data, isAgentConnected, manualRefresh };
 }

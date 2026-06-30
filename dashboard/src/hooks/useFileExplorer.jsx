@@ -1,7 +1,7 @@
 // navigate through project directory and select files
 import { useCallback } from 'react';
 
-export function useFileExplorer() {
+export function useFileExplorer(manualRefresh) {
   // handle navigating up a directory 
   const navigateUp = useCallback((activeFile) => {
     const currentFolder = activeFile ? activeFile.replace(/\/$/, '') : '';
@@ -11,8 +11,10 @@ export function useFileExplorer() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ relativePath: currentFolder, goUp: true }),
-    }).catch(err => console.error("Error navigating up:", err));
-  }, []);
+    })
+    .then(() => manualRefresh())
+    .catch(err => console.error("Error navigating up:", err));
+  }, [manualRefresh]);
 
   // handle selecting a file 
   const selectFile = useCallback((file) => {
@@ -21,8 +23,10 @@ export function useFileExplorer() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ relativePath: file.relativePath }),
-    }).catch(err => console.error(`Error updating view for ${file.name}:`, err));
-  }, []);
+    })
+    .then(() => manualRefresh())
+    .catch(err => console.error(`Error updating view for ${file.name}:`, err));
+  }, [manualRefresh]);
 
   return { navigateUp, selectFile };
 }

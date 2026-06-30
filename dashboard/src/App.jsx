@@ -8,8 +8,8 @@ import { useDashboardData } from './hooks/useDashboardData';
 import { useFileExplorer } from './hooks/useFileExplorer';
 
 export default function ScoutDashboard() {
-  const { data, isAgentConnected } = useDashboardData();
-  const { navigateUp, selectFile } = useFileExplorer();
+  const { data, isAgentConnected, manualRefresh } = useDashboardData();
+  const { navigateUp, selectFile } = useFileExplorer(manualRefresh);
   
   const hasChanges = useMemo(() => 
     data?.proposedCode && data.proposedCode !== data.currentCode, 
