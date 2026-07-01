@@ -26,13 +26,13 @@ export default function ScoutDashboard() {
 
       <main className="flex-1 grid grid-cols-12 gap-0">
         <Sidebar 
-          data={data} 
+          data={data || {}}
           onNavigateUp={handleNavigateUp} 
           onFileClick={selectFile}
         />
 
         <section className="col-span-9 p-4 space-y-8">
-          <FileLengthChart files={data?.files} />
+          <FileLengthChart files={data?.files || []}/>
           <CodeView data={data} hasChanges={hasChanges} />
         </section>
       </main>
