@@ -23,8 +23,7 @@ const DEFAULT_PROPS = {
   files: [],
   activeFile: null,
   currentCode: "",
-  proposedCode: "",
-  lastUpdated: ""
+  proposedCode: ""
 };
 
 /**
@@ -234,7 +233,6 @@ app.post("/api/select-dir", async (req, res) => {
     await saveDashboardProps({
       files: fileList,
       activeFile: relativePath ? `${relativePath}/` : './', // handle root dir 
-      lastUpdated: new Date().toLocaleTimeString()
     });
 
     res.json({ success: true });
