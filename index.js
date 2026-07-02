@@ -221,10 +221,9 @@ app.post("/api/select-dir", async (req, res) => {
   let { relativePath, goUp } = req.body;
   try {
     // go up a folder
-    if (goUp && relativePath) {
-      const parts = relativePath.split('/').filter(Boolean);
-      parts.pop(); // drop current folder
-      relativePath = parts.join('/'); // reassemble path
+    if (goUp) {
+      relativePath = path.dirname(relativePath);
+      if (relativePath === '.') relativePath = ''; // handle root path
     }
 
     getSafePath(relativePath || "");
