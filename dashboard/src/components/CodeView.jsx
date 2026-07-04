@@ -68,7 +68,14 @@ function CodeView({ data, hasChanges }) {
 
                     {/* sync dashboard to local file state */}
                     {data?.activeFile && (
-                        <button onClick={handleSync} className="text-[11px] text-slate-500 hover:text-blue-400 transition-colors" title="Sync">🔄 Sync</button>
+                        <button
+                            onClick={handleSync}
+                            className="group flex items-center gap-1.5 text-[10px] uppercase font-bold tracking-wider bg-slate-800/50 text-slate-400 border border-slate-700/50 px-2 py-1 rounded-md hover:bg-slate-800 hover:text-blue-400 hover:border-blue-500/30 transition-all active:scale-95"
+                            title="Sync dashboard"
+                        >
+                            <span>🔄</span>
+                            Sync
+                        </button>
                     )}
                 </div>
             </div>
