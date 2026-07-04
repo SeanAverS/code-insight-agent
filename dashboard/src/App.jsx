@@ -7,6 +7,18 @@ import CodeView from './components/CodeView';
 import { useDashboardData } from './hooks/useDashboardData';
 import { useFileExplorer } from './hooks/useFileExplorer';
 
+// ignore recharts warning 
+const originalWarn = console.warn;
+console.warn = (...args) => {
+  if (
+    typeof args[0] === 'string' && 
+    args[0].includes('width(-1) and height(-1)')
+  ) {
+    return; 
+  }
+  originalWarn(...args); 
+};
+
 export default function ScoutDashboard() {
   const { data, isAgentConnected, manualRefresh } = useDashboardData();
   const { navigateUp, selectFile } = useFileExplorer(manualRefresh);
