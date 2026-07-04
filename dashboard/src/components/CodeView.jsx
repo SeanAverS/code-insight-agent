@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef } from 'react';
 import { MessageSquareCode } from 'lucide-react';
+import { Copy } from 'lucide-react';
 import CodeLineLogic from './CodeLineLogic';
 
 function CodeView({ data, hasChanges }) {
@@ -81,7 +82,20 @@ function CodeView({ data, hasChanges }) {
             </div>
 
             {/* display current file name */}
-            {data?.activeFile && <span className="text-[11px] font-mono text-slate-500 block mb-2">{data.activeFile}</span>}
+            {data?.activeFile && (
+                <div className="flex items-center gap-2 mb-2 group">
+                    <span className="text-[11px] font-mono text-slate-500 truncate">
+                        {data.activeFile}
+                    </span>
+                    <button
+                        onClick={() => navigator.clipboard.writeText(data.activeFile)}
+                        className="p-1 rounded hover:bg-slate-800 text-slate-600 hover:text-blue-400 transition-colors"
+                        title="Copy path to clipboard"
+                    >
+                        <Copy size={12} />
+                    </button>
+                </div>
+            )}
 
             {/* guide for code lines */}
             <div className="flex flex-col h-[400px] bg-black/30 rounded-xl border border-slate-800/60 overflow-hidden font-mono text-[12px]">
