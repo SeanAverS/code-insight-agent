@@ -2,10 +2,8 @@
 
 A dashboard designed for real-time file inspection and to visualize agent-assisted code refinements.
 
-<video width="100%" autoplay loop muted playsinline>
-  <source src="./gif_demo.mp4" type="video/mp4">
-  Your browser does not support the video tag.
-</video>
+## Demo: Ask Claude (agent) to make the dropdown lighter 
+![Demo of App Interaction](videos/app_demo.gif)
 
 ---
 
